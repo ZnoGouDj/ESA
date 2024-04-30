@@ -44,6 +44,48 @@ describe('findPos', () => {
       [0, 0, 0],
     ];
     const position = findPos(container);
-    expect(position.toBe([0, 0]));
-  })
+    expect(position).toEqual([0, 0]);
+  });
+
+  test('finds [0, 0] position in a container with a single row of zeroes', () => {
+    const container = [[0, 0, 0]];
+    const position = findPos(container);
+    expect(position).toEqual([0, 0]);
+  });
+
+  test('finds [0, 0] position in a container with a single column of zeroes', () => {
+    const container = [[0], [0], [0]];
+    const position = findPos(container);
+    expect(position).toEqual([0, 0]);
+  });
+
+  test('finds [0, 1] position in a container with a non-zero value before the first zero', () => {
+    const container = [
+      [1, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ];
+    const position = findPos(container);
+    expect(position).toEqual([0, 1]);
+  });
+
+  test('returns null for a container with no zeroes', () => {
+    const container = [
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+    ];
+    const position = findPos(container);
+    expect(position).toBeNull();
+  });
+
+  test('finds [1, 2] position in a container with multiple zeroes', () => {
+    const container = [
+      [1, 1, 1],
+      [1, 1, 0],
+      [1, 0, 1],
+    ];
+    const position = findPos(container);
+    expect(position).toEqual([1, 2]);
+  });
 })

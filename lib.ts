@@ -1,4 +1,4 @@
-import { Anchorage } from "./types";
+import { Anchorage, Position } from "./types";
 
 export const newAnchorage = (width: number, height: number): Anchorage => {
   if (width <= 0 || height <= 0) {
@@ -17,6 +17,14 @@ export const newAnchorage = (width: number, height: number): Anchorage => {
   return container;
 }
 
-export const findPos = (container) => {
+export const findPos = (container: Anchorage): Position | null  => {
+  for (let i = 0; i < container.length; i++) {
+    const row = container[i];
+    const columnIndex = row.indexOf(0);
+    if (columnIndex !== -1) {
+      return [i, columnIndex];
+    }
+  }
+
   return null;
 }
