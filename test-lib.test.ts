@@ -1,4 +1,4 @@
-import { newAnchorage } from './lib';
+import { newAnchorage, findPos } from './lib';
 
 describe('newAnchorage', () => {
   test('creates a container of zeroes with specified dimensions', () => {
@@ -35,3 +35,15 @@ describe('newAnchorage', () => {
     });
   });
 });
+
+describe('findPos', () => {
+  test('finds [0, 0] position in an empty container', () => {
+    const container = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ];
+    const position = findPos(container);
+    expect(position.toBe([0, 0]));
+  })
+})

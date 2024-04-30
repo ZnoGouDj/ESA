@@ -16,3 +16,7 @@ export const newAnchorage = (width: number, height: number): Anchorage => {
 
   return container;
 }
+
+export const findPos = (container) => {
+  return null;
+}
