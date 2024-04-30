@@ -12,36 +12,16 @@ describe('newAnchorage', () => {
     });
   });
 
-  test('creates a container of zeroes with zero width and height', () => {
+  test('throws an error with zero width and height', () => {
     const width = 0;
     const height = 0;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(height);
+    expect(() => newAnchorage(width, height)).toThrow('Oops! Anchorage size is invalid.');
   });
 
-  test('returns empty array with negative width and height', () => {
+  test('throws an error with negative width and height', () => {
     const width = -3;
     const height = -2;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(0);
-  });
-
-  test('creates a container of zeroes with large dimensions', () => {
-    const width = 1000;
-    const height = 1000;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(height);
-    container.forEach(row => {
-      expect(row.length).toBe(width);
-      expect(row.every(val => val === 0)).toBe(true);
-    });
-  });
-
-  test('returns empty array with large negative dimensions', () => {
-    const width = -1000;
-    const height = -1000;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(0);
+    expect(() => newAnchorage(width, height)).toThrow('Oops! Anchorage size is invalid.');
   });
 
   test('creates a container of zeroes with non-integer dimensions', () => {

@@ -1,12 +1,14 @@
-export const newAnchorage = (width: number, height: number): number[][] => {
+import { Anchorage } from "./types";
+
+export const newAnchorage = (width: number, height: number): Anchorage => {
   if (width <= 0 || height <= 0) {
-    return [];
+    throw new Error('Oops! Anchorage size is invalid.')
   }
 
   width = Math.floor(width);
   height = Math.floor(height);
 
-  const container: number[][] = [];
+  const container: Anchorage = [];
 
   for (let i = 0; i < height; i++) {
     container.push(Array(width).fill(0));
