@@ -124,5 +124,29 @@ describe('placeShip', () => {
     const ship: Ship = { x: 2, y: 2 };
     const position = placeShip(ship, anchorage);
     expect(position).toEqual({ x: 0, y: 0 });
+    expect(anchorage.grid).toEqual([
+      [1, 1, 0],
+      [1, 1, 0],
+      [0, 0, 0],
+    ]);
+  });
+
+  test('places ship in a partially filled anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
+    const ship: Ship = { x: 2, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toEqual({ x: 1, y: 0 });
+    expect(anchorage.grid).toEqual([
+      [1, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
+    ]);
   });
 });
