@@ -2,29 +2,36 @@ import { Anchorage, Position } from "./types";
 
 export const newAnchorage = (width: number, height: number): Anchorage => {
   if (width <= 0 || height <= 0) {
-    throw new Error('Oops! Anchorage size is invalid.')
+    throw new Error('Oops! Anchorage size is invalid.');
   }
 
   width = Math.floor(width);
   height = Math.floor(height);
 
-  const container: Anchorage = [];
+  const grid: number[][] = [];
 
   for (let i = 0; i < height; i++) {
-    container.push(Array(width).fill(0));
+    grid.push(Array(width).fill(0));
   }
 
-  return container;
-}
+  const anchorage: Anchorage = {
+    dimensions: { x: width, y: height },
+    grid: grid,
+  };
 
-export const findPos = (container: Anchorage): Position | null  => {
-  for (let i = 0; i < container.length; i++) {
-    const row = container[i];
+  return anchorage;
+};
+
+export const findPos = (container: Anchorage): Position | null => {
+  const { grid } = container;
+
+  for (let i = 0; i < grid.length; i++) {
+    const row = grid[i];
     const columnIndex = row.indexOf(0);
     if (columnIndex !== -1) {
-      return [i, columnIndex];
+      return { x: columnIndex, y: i };
     }
   }
 
   return null;
-}
+};

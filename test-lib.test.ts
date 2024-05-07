@@ -1,12 +1,14 @@
 import { newAnchorage, findPos } from './lib';
+import { Anchorage } from './types';
 
 describe('newAnchorage', () => {
-  test('creates a container of zeroes with specified dimensions', () => {
+  test('creates an anchorage object with specified dimensions and grid of zeroes', () => {
     const width = 3;
     const height = 2;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(height);
-    container.forEach(row => {
+    const anchorage: Anchorage = newAnchorage(width, height);
+    expect(anchorage.dimensions).toEqual({ x: width, y: height });
+    expect(anchorage.grid.length).toBe(height);
+    anchorage.grid.forEach(row => {
       expect(row.length).toBe(width);
       expect(row.every(val => val === 0)).toBe(true);
     });
@@ -24,12 +26,13 @@ describe('newAnchorage', () => {
     expect(() => newAnchorage(width, height)).toThrow('Oops! Anchorage size is invalid.');
   });
 
-  test('creates a container of zeroes with non-integer dimensions', () => {
+  test('creates an anchorage object of zeroes with non-integer dimensions', () => {
     const width = 2.5;
     const height = 3.7;
-    const container = newAnchorage(width, height);
-    expect(container.length).toBe(Math.floor(height));
-    container.forEach(row => {
+    const anchorage: Anchorage = newAnchorage(width, height);
+    expect(anchorage.dimensions).toEqual({ x: Math.floor(width), y: Math.floor(height) });
+    expect(anchorage.grid.length).toBe(Math.floor(height));
+    anchorage.grid.forEach(row => {
       expect(row.length).toBe(Math.floor(width));
       expect(row.every(val => val === 0)).toBe(true);
     });
@@ -38,54 +41,72 @@ describe('newAnchorage', () => {
 
 describe('findPos', () => {
   test('finds [0, 0] position in an empty container', () => {
-    const container = [
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-    ];
+    const container: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
     const position = findPos(container);
-    expect(position).toEqual([0, 0]);
+    expect(position).toEqual({ x: 0, y: 0 });
   });
 
   test('finds [0, 0] position in a container with a single row of zeroes', () => {
-    const container = [[0, 0, 0]];
+    const container: Anchorage = {
+      dimensions: { x: 3, y: 1 },
+      grid: [[0, 0, 0]],
+    };
     const position = findPos(container);
-    expect(position).toEqual([0, 0]);
+    expect(position).toEqual({ x: 0, y: 0 });
   });
 
   test('finds [0, 0] position in a container with a single column of zeroes', () => {
-    const container = [[0], [0], [0]];
+    const container: Anchorage = {
+      dimensions: { x: 1, y: 3 },
+      grid: [[0], [0], [0]],
+    };
     const position = findPos(container);
-    expect(position).toEqual([0, 0]);
+    expect(position).toEqual({ x: 0, y: 0 });
   });
 
   test('finds [0, 1] position in a container with a non-zero value before the first zero', () => {
-    const container = [
-      [1, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-    ];
+    const container: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
     const position = findPos(container);
-    expect(position).toEqual([0, 1]);
+    expect(position).toEqual({ x: 1, y: 0 });
   });
 
   test('returns null for a container with no zeroes', () => {
-    const container = [
-      [1, 1, 1],
-      [1, 1, 1],
-      [1, 1, 1],
-    ];
+    const container: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+      ],
+    };
     const position = findPos(container);
     expect(position).toBeNull();
   });
 
   test('finds [1, 2] position in a container with multiple zeroes', () => {
-    const container = [
-      [1, 1, 1],
-      [1, 1, 0],
-      [1, 0, 1],
-    ];
+    const container: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [1, 1, 1],
+        [1, 1, 0],
+        [1, 0, 1],
+      ],
+    };
     const position = findPos(container);
-    expect(position).toEqual([1, 2]);
+    expect(position).toEqual({ x: 2, y: 1 });
   });
-})
+});
