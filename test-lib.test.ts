@@ -1,5 +1,5 @@
-import { newAnchorage, findPos } from './lib';
-import { Anchorage } from './types';
+import { newAnchorage, findPos, placeShip } from './lib';
+import { Anchorage, Ship } from './types';
 
 describe('newAnchorage', () => {
   test('creates an anchorage object with specified dimensions and grid of zeroes', () => {
@@ -108,5 +108,101 @@ describe('findPos', () => {
     };
     const position = findPos(container);
     expect(position).toEqual({ x: 2, y: 1 });
+  });
+});
+
+describe('placeShip', () => {
+  test('places ship in an empty anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
+    const ship: Ship = { x: 2, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toEqual({ x: 0, y: 0 });
+    expect(anchorage.grid).toEqual([
+      [1, 1, 0],
+      [1, 1, 0],
+      [0, 0, 0],
+    ]);
+  });
+
+  test('places ship in a partially filled anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
+    const ship: Ship = { x: 2, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toEqual({ x: 1, y: 0 });
+    expect(anchorage.grid).toEqual([
+      [1, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
+    ]);
+  });
+
+  test('places ship in a partially filled anchorage with rotation', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 4, y: 3 },
+      grid: [
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ],
+    };
+    const ship: Ship = { x: 4, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toEqual({ x: 0, y: 1 });
+
+    expect(anchorage.grid).toEqual([
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+    ]);
+  });
+
+  test('cannot place ship in a fully filled anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 2, y: 2 },
+      grid: [
+        [1, 1],
+        [1, 1],
+      ],
+    };
+    const ship: Ship = { x: 2, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toBeNull();
+
+    expect(anchorage.grid).toEqual([
+      [1, 1],
+      [1, 1],
+    ]);
+  });
+
+  test('cannot place ship larger than anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 2, y: 2 },
+      grid: [
+        [0, 0],
+        [0, 0],
+      ],
+    };
+    const ship: Ship = { x: 3, y: 3 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toBeNull();
+
+    expect(anchorage.grid).toEqual([
+      [0, 0],
+      [0, 0],
+    ]);
   });
 });
