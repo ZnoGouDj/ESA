@@ -1,4 +1,4 @@
-import { Anchorage, Position } from "./types";
+import { Anchorage, Position, Ship } from "./types";
 
 export const newAnchorage = (width: number, height: number): Anchorage => {
   if (width <= 0 || height <= 0) {
@@ -34,4 +34,8 @@ export const findPos = (container: Anchorage): Position | null => {
   }
 
   return null;
+};
+
+export const placeShip = (ship: Ship, anchorage: Anchorage): Position | null => {
+  return null
 };

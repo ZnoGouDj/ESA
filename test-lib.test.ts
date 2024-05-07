@@ -1,5 +1,5 @@
-import { newAnchorage, findPos } from './lib';
-import { Anchorage } from './types';
+import { newAnchorage, findPos, placeShip } from './lib';
+import { Anchorage, Ship } from './types';
 
 describe('newAnchorage', () => {
   test('creates an anchorage object with specified dimensions and grid of zeroes', () => {
@@ -108,5 +108,21 @@ describe('findPos', () => {
     };
     const position = findPos(container);
     expect(position).toEqual({ x: 2, y: 1 });
+  });
+});
+
+describe('placeShip', () => {
+  test('places ship in an empty anchorage', () => {
+    const anchorage: Anchorage = {
+      dimensions: { x: 3, y: 3 },
+      grid: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ],
+    };
+    const ship: Ship = { x: 2, y: 2 };
+    const position = placeShip(ship, anchorage);
+    expect(position).toEqual({ x: 0, y: 0 });
   });
 });
