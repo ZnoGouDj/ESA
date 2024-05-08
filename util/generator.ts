@@ -67,5 +67,3 @@ export const wrap = <TItem>(generator: Generator<TItem, any, TItem>): ChainableG
     any: () => !generator.next().done,
     all: (predicate) => all(generator, predicate)
   });
-
-
