@@ -1,91 +1,68 @@
-import { Anchorage, Position, Ship } from "./types";
 
-export const newAnchorage = (width: number, height: number): Anchorage => {
-  if (width <= 0 || height <= 0) {
-    throw new Error('Oops! Anchorage size is invalid.');
+import { IAnchorage, PlacedShip, UnplacedShip } from "./models/anchorage";
+import { Position } from "./models/common";
+import { IFleets } from "./models/dto";
+
+/// Packs a set of ships defined in the input object coming from
+/// https://esa.instech.no/api/fleets/random
+export const packFleets = (fleets: IFleets): IAnchorage[] => {
+  assertFleetsObjectValid(fleets);
+  const allShips = flattenShips(fleets);
+  let anhorageSoFar: IAnchorage = { ships: [], dimensions: fleets.anchorageSize };
+  while (allShips.length) {
+    const nextShip = allShips[0];
+    const nextPosition = tryPlace(anhorageSoFar, nextShip);
+
+
+    if (nextPosition != null) {
+      const nextPlacedShip: PlacedShip = {
+        position: nextPosition,
+        ...nextShip,
+      };
+      anhorageSoFar.ships.push(nextPlacedShip);
+      allShips.shift();
+    } else {
+      break;
+    }
   }
 
-  width = Math.floor(width);
-  height = Math.floor(height);
-
-  const grid: number[][] = [];
-
-  for (let i = 0; i < height; i++) {
-    grid.push(Array(width).fill(0));
-  }
-
-  const anchorage: Anchorage = {
-    dimensions: { x: width, y: height },
-    grid: grid,
-  };
-
-  return anchorage;
+  return [ anhorageSoFar ];
 };
 
-export const findPos = (container: Anchorage): Position | null => {
-  const { grid } = container;
-
-  for (let i = 0; i < grid.length; i++) {
-    const row = grid[i];
-    const columnIndex = row.indexOf(0);
-    if (columnIndex !== -1) {
-      return { x: columnIndex, y: i };
+const tryPlace = (anchorage: IAnchorage, _: UnplacedShip): Position | null => {
+  for (let position of getAllPositions(anchorage)) {
+    if (anchorage.ships.find(s => s.position.x == position.x && s.position.y == position.y) === undefined) {
+      return position;
     }
   }
 
   return null;
-};
+}
 
-export const placeShip = (ship: Ship, anchorage: Anchorage): Position | null => {
-  const { dimensions, grid } = anchorage;
-  const { x: shipWidth, y: shipHeight } = ship;
-
-  for (let i = 0; i <= dimensions.y - shipHeight; i++) {
-    for (let j = 0; j <= dimensions.x - shipWidth; j++) {
-      let isSpotEmpty = true;
-
-      // try to place the ship horizontally
-      for (let y = i; y < i + shipHeight; y++) {
-        for (let x = j; x < j + shipWidth; x++) {
-          if (grid[y][x] !== 0) {
-            isSpotEmpty = false;
-            break;
-          }
-        }
-        if (!isSpotEmpty) break;
-      }
-
-      if (isSpotEmpty) {
-        for (let y = i; y < i + shipHeight; y++) {
-          for (let x = j; x < j + shipWidth; x++) {
-            grid[y][x] = 1;
-          }
-        }
-        return { x: j, y: i };
-      }
-
-      // try to place the ship vertically
-      isSpotEmpty = true;
-      for (let x = j; x < j + shipWidth; x++) {
-        for (let y = i; y < i + shipHeight; y++) {
-          if (grid[y][x] !== 0) {
-            isSpotEmpty = false;
-            break;
-          }
-        }
-        if (!isSpotEmpty) break;
-      }
-
-      if (isSpotEmpty) {
-        for (let x = j; x < j + shipWidth; x++) {
-          for (let y = i; y < i + shipHeight; y++) {
-            grid[y][x] = 1;
-          }
-        }
-        return { x: j, y: i };
-      }
+function* getAllPositions(anchorage: IAnchorage): Generator<Position, void, Position> {
+  for (let x = 0; x < anchorage.dimensions.width; x++) {
+    for (let y = 0; y < anchorage.dimensions.height; y++) {
+      yield { x, y };
     }
   }
+}
 
-  return null;
-};
+const flattenShips = (fleets: IFleets): UnplacedShip[] => 
+  fleets.fleets.flatMap(fleet => 
+    Array
+      .from({ length: fleet.shipCount })
+      .map(_ => ({
+        designation: fleet.shipDesignation,
+        dimensions: fleet.singleShipDimensions
+      }))
+    );
+
+const assertFleetsObjectValid = (fleets: IFleets) => {
+  if (fleets.anchorageSize.height <= 0) {
+    throw Error("Oops! Anchorage height is invalid.");
+  }
+  
+  if (fleets.anchorageSize.width <= 0) {
+    throw Error("Oops! Anchorage width is invalid.");
+  }
+}
