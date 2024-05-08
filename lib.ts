@@ -1,34 +1,45 @@
 
-import { IAnchorage, PlacedShip, UnplacedShip } from "./models/anchorage";
-import { Dimensions, Position, getCoveringPoints, translate, hash, isInBounds } from "./models/geometry";
+import { Anchorage, PlacedShip, UnplacedShip } from "./models/anchorage";
+import { Dimensions, Position, getCoveringPoints, translate, hash, isInBounds, getArea } from "./models/geometry";
 import { assertFleetsObjectValid, IFleets } from "./models/dto";
 
 /// Packs a set of ships defined in the input object coming from
 /// https://esa.instech.no/api/fleets/random
-export const packFleets = (fleets: IFleets): IAnchorage[] => {
+export const packFleets = (fleets: IFleets): Anchorage[] => {
   assertFleetsObjectValid(fleets);
-  const allShips = flattenShips(fleets);
-  const anhorageSoFar = newAnchorage(fleets.anchorageSize);
+  const allShips = flattenAndSortShips(fleets);
+  const anchorages = [newAnchorage(fleets.anchorageSize)];
 
-  while (allShips.length) {
-    const nextShip = allShips[0];
-    const placementResult = tryPlace(anhorageSoFar, nextShip);
+  let nextShipIndex = 0;
+  while (allShips.length > 0) {
+    const nextShip = allShips[nextShipIndex];
+    const currentAnchorage = anchorages[anchorages.length - 1];
+    const placementResult = tryPlace(currentAnchorage, nextShip);
+
     if (placementResult != null) {
       const [position, isRotated] = placementResult;
-      appendShip(anhorageSoFar, { position, isRotated, ...nextShip });
-      allShips.shift();
-    } else {
-      break;
+      appendShip(currentAnchorage, { position, isRotated, ...nextShip });
+      allShips.splice(nextShipIndex, 1);
+      continue;
+    }
+
+    // Proceed to next ship in case we failed to pack the current one.
+    nextShipIndex++;
+
+    // Can't place any more ships. Go onto next anchorage and continue.
+    if (nextShipIndex == allShips.length) {
+      nextShipIndex = 0;
+      anchorages.push(newAnchorage(fleets.anchorageSize));
     }
   }
 
-  return [ anhorageSoFar ];
+  return anchorages;
 };
 
 /// Tries to find the first free point that could fit a given ship.
 /// Second element of the tuple is true if the ship had to be rotated before being fit.
 /// Returns null if no position on an anchorage could fit the ship.
-const tryPlace = (anchorage: IAnchorage, ship: UnplacedShip): [Position, boolean] | null =>
+const tryPlace = (anchorage: Anchorage, ship: UnplacedShip): [Position, boolean] | null =>
   getCoveringPoints(anchorage.dimensions)
     .map<[Position, boolean] | null>(candidatePoint => {
       if (doesFit(anchorage, ship, candidatePoint))
@@ -45,7 +56,7 @@ const rotate = (ship: UnplacedShip): UnplacedShip =>
   ({...ship, dimensions: { width: ship.dimensions.height, height: ship.dimensions.width }});
 
 /// Does a given ship fit at a given position on a given anchorage
-const doesFit = (anchorage: IAnchorage, ship: UnplacedShip, position: Position): boolean =>
+const doesFit = (anchorage: Anchorage, ship: UnplacedShip, position: Position): boolean =>
   getCoveringPoints(ship.dimensions)
     .map(point => translate(position, point))
     .all(point =>
@@ -54,20 +65,20 @@ const doesFit = (anchorage: IAnchorage, ship: UnplacedShip, position: Position):
     );
 
 /// Appends a placed ship onto an anchorage and marks the "occupied points" in it.
-const appendShip = (anchorage: IAnchorage, ship: PlacedShip) => {
+const appendShip = (anchorage: Anchorage, ship: PlacedShip) => {
   anchorage.ships.push(ship);
-  getCoveringPoints(ship.dimensions)
+  getCoveringPoints((ship.isRotated ? rotate(ship) : ship).dimensions)
     .map(p => translate(ship.position, p))
     .map(p => hash(anchorage.dimensions, p))
     .forEach(pointHash => anchorage.occupiedCells.add(pointHash));
 }
 
 /// Creates a new empty anchorage
-const newAnchorage = (dimensions: Dimensions): IAnchorage =>
+const newAnchorage = (dimensions: Dimensions): Anchorage =>
   ({ ships: [], occupiedCells: new Set([]), dimensions })
 
 /// Flattens inputs IFleets into a collection of unplaced ships
-const flattenShips = (fleets: IFleets): UnplacedShip[] => 
+const flattenAndSortShips = (fleets: IFleets): UnplacedShip[] => 
   fleets.fleets.flatMap(fleet => 
     Array
       .from({ length: fleet.shipCount })
@@ -75,4 +86,5 @@ const flattenShips = (fleets: IFleets): UnplacedShip[] =>
         designation: fleet.shipDesignation,
         dimensions: fleet.singleShipDimensions
       }))
-    );
+    )
+    .sort((left, right) => getArea(right.dimensions) - getArea(left.dimensions));

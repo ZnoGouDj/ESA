@@ -1,14 +1,15 @@
-import { Dimensions } from "./geometry"
+import { Anchorage, PlacedShip } from "./anchorage"
+import { Dimensions, Position } from "./geometry"
 
 interface IFleet {
-    singleShipDimensions: Dimensions,
-    shipCount: number,
-    shipDesignation: string
+  singleShipDimensions: Dimensions,
+  shipCount: number,
+  shipDesignation: string
 }
 
 export interface IFleets {
-    anchorageSize: Dimensions,
-    fleets: IFleet[]
+  anchorageSize: Dimensions,
+  fleets: IFleet[]
 }
 
 export const assertFleetsObjectValid = (fleets: IFleets) => {

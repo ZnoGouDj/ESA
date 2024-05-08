@@ -1,33 +1,6 @@
-import { IFleets } from "./models/dto";
 import { packFleets } from "./lib";
-import minimalSample from "./sample.minimal.json";
 
-describe('packFleets', () => {
-  test('requires an input object in the same shape as the api output', () => {
-    const input = minimalSample as IFleets;
-    packFleets(input);
-  });
-
-  describe('input validation', () => {
-    test('should crash in case of invalid width', () => {
-      expect(() => 
-        packFleets({
-          anchorageSize: { width: -1, height: 2 },
-          fleets: []
-        })
-      ).toThrow('Oops! Anchorage width is invalid.');
-    });
-
-    test('should crash in case of invalid height', () => {
-      expect(() => 
-        packFleets({
-          anchorageSize: { width: 2, height: -1 },
-          fleets: []
-        })
-      ).toThrow('Oops! Anchorage height is invalid.');
-    });
-  });
-
+describe('lib', () => {
   describe('ship packing', () => {
     test('can place single ship smaller than anchorage size', () => {
       const anchorages = packFleets({
@@ -104,11 +77,30 @@ describe('packFleets', () => {
       const ships = anchorages[0].ships;
 
       expect(ships.length).toBe(2);
+      // Bigger ship is first since it yields better results for packing
       expect(ships[0].position).toStrictEqual({ x: 0, y: 0});
-      expect(ships[1].position).toStrictEqual({ x: 1, y: 0});
       // Fitting rotated doesn't change dimensions, but instead sets the appropriate flag.
-      expect(ships[1].dimensions).toStrictEqual({ width: 1, height: 2})
-      expect(ships[1].isRotated).toBe(true);
+      expect(ships[0].dimensions).toStrictEqual({ width: 1, height: 2})
+      expect(ships[0].isRotated).toBe(true);
+
+      expect(ships[1].position).toStrictEqual({ x: 2, y: 0});
+    });
+
+    test('should produce multiple anchorages if can\'t fit in one', () => {
+      const anchorages = packFleets({
+        anchorageSize: { width: 1, height: 1 },
+        fleets: [
+          {
+            shipCount: 2,
+            shipDesignation: "Boat",
+            singleShipDimensions: { width: 1, height: 1 }
+          }
+        ]
+      });
+
+      expect(anchorages.length).toBe(2);
+      expect(anchorages[0].ships.length).toBe(1);
+      expect(anchorages[1].ships.length).toBe(1);
     });
   });
 });

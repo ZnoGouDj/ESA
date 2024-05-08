@@ -29,3 +29,6 @@ export const hash = (bounds: Dimensions, point: Position): number =>
 
 export const isInBounds = (bounds: Dimensions, point: Position): boolean =>
   point.x >= 0 && point.x < bounds.width && point.y >= 0 && point.y < bounds.height;
+
+export const getArea = (bounds: Dimensions): number =>
+  bounds.height * bounds.width;

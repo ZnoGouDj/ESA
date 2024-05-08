@@ -7,7 +7,7 @@ export type UnplacedShip = {
 
 export type PlacedShip = UnplacedShip & { position: Position, isRotated: boolean };
 
-export interface IAnchorage {
+export type Anchorage = {
     dimensions: Dimensions,
     occupiedCells: Set<number>,
     ships: PlacedShip[]
